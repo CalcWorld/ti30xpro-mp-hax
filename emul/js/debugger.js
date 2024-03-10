@@ -10,6 +10,57 @@ function debug() {
         div.appendChild(button);
     }
 
+    register("Screenshot",  function (){
+        let screen = calc_instance.getScreen();
+        let image = new Image();
+        const model = calc_instance.calcModel || calc_instance.ze?.productflavor || calc_instance.Ge?.productflavor
+        image.src = screen;
+        image.onload = function() {
+            let canvas = document.createElement('canvas');
+            canvas.width = image.naturalWidth;
+            canvas.height = image.naturalHeight;
+            const context = canvas.getContext('2d');
+            // draw white background
+            context.fillStyle = 'white';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(image, 0, 0);
+            canvas.toBlob( function(blob) {
+                let link = document.createElement('a');
+                link.download = `${model}_${Date.now()}.png`
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                try {
+                    const item = new ClipboardItem({ 'image/png': blob });
+                    navigator.clipboard.write([item]).then();
+                }catch (e) {
+                    console.error(e);
+                    const div = document.createElement('div');
+                    div.style.position = 'absolute';
+                    div.style.left = '-9999px';
+                    div.style.zIndex = '-9999';
+                    div.contentEditable = true;
+                    const img = document.createElement('img');
+                    img.src = canvas.toDataURL();
+                    div.appendChild(img);
+                    document.body.appendChild(div);
+                    const range = new Range();
+                    range.selectNode(img);
+                    document.getSelection().removeAllRanges();
+                    document.getSelection().addRange(range);
+                    document.execCommand('copy');
+                    document.getSelection().removeAllRanges();
+                    document.body.removeChild(div);
+                }
+            }, 'image/png');
+        };
+    });
+
+    register("Full screen", function () {
+        if (document.fullscreenEnabled) {
+            document.documentElement.requestFullscreen().then();
+        }
+    });
+
     register("Dump ROM", function() {
         var url = window.URL.createObjectURL(new Blob([calc_instance.asic.mcu.codeMemory.mem], {type: "application/octet-stream"}));
         window.open(url);

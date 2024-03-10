@@ -1,0 +1,8 @@
+body {
+    margin: 0px;
+    outline: none;
+    background: #7E8080;
+}
+#display {
+    image-rendering: pixelated;
+}
